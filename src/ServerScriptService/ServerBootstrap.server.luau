@@ -32,9 +32,12 @@ PastelCore:Initialize()
 local PlayerDataService = require(Services.PlayerDataService)
 local WaveService = require(Services.WaveService)
 local CombatService = require(Services.CombatService)
+local EconomyService = require(Services.EconomyService)
 
 PlayerDataService:Start()
 WaveService:Start()
-CombatService:Start()
+EconomyService:Start()
+-- CombatService placeholder initialization
+-- CombatService:Start()
 
 print("[Server] Pastel Rift Survival Ready!")
