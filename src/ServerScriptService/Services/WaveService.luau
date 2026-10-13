@@ -9,6 +9,9 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local WaveConfig = require(ReplicatedStorage.Shared.Config.WaveConfig)
 local EnemySpawner = require(ServerScriptService.Systems.EnemySpawner)
 
+local Net = ReplicatedStorage:WaitForChild("Net")
+local WaveUpdate = Net:WaitForChild("WaveUpdate")
+
 local WaveService = {
     CurrentWave = 0,
     IsWaveActive = false,
@@ -37,9 +40,11 @@ function WaveService:PrepareNextWave()
     end
     
     print("[WaveService] Intermission for Wave " .. self.CurrentWave)
+    WaveUpdate:FireAllClients({Wave = self.CurrentWave, Phase = "Intermission"})
     task.wait(WaveConfig.IntermissionTime)
     
     print("[WaveService] Starting Wave " .. self.CurrentWave)
+    WaveUpdate:FireAllClients({Wave = self.CurrentWave, Phase = "Active"})
     self:StartWave(config)
 end
 

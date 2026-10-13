@@ -1,12 +1,30 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+-- Ensure Remotes Exist
+local Net = ReplicatedStorage:FindFirstChild("Net") or Instance.new("Folder", ReplicatedStorage)
+Net.Name = "Net"
+local function getRemote(name, class)
+    local r = Net:FindFirstChild(name)
+    if not r then
+        r = Instance.new(class)
+        r.Name = name
+        r.Parent = Net
+    end
+    return r
+end
+getRemote("CoreUpdate", "RemoteEvent")
+getRemote("WaveUpdate", "RemoteEvent")
+
 local Services = ServerScriptService:WaitForChild("Services")
 local Systems = ServerScriptService:WaitForChild("Systems")
 
 print("[Server] Pastel Rift Survival Initializing...")
 
 -- Initialize Systems
+local AssetGenerator = require(Systems.AssetGenerator)
+AssetGenerator:GenerateAll()
+
 local PastelCore = require(Systems.PastelCore)
 PastelCore:Initialize()
 
