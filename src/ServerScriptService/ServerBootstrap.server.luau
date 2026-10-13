@@ -15,6 +15,7 @@ local function getRemote(name, class)
 end
 getRemote("CoreUpdate", "RemoteEvent")
 getRemote("WaveUpdate", "RemoteEvent")
+getRemote("WeaponFire", "RemoteEvent")
 
 local Services = ServerScriptService:WaitForChild("Services")
 local Systems = ServerScriptService:WaitForChild("Systems")
@@ -33,10 +34,12 @@ local PlayerDataService = require(Services.PlayerDataService)
 local WaveService = require(Services.WaveService)
 local CombatService = require(Services.CombatService)
 local EconomyService = require(Services.EconomyService)
+local WeaponService = require(Services.WeaponService)
 
 PlayerDataService:Start()
 WaveService:Start()
 EconomyService:Start()
+WeaponService:Start()
 -- CombatService placeholder initialization
 -- CombatService:Start()
 
