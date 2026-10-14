@@ -1,6 +1,8 @@
 --[[
     EconomyService.luau
-    Handles player currency and shop transactions.
+    Validates every shop request from the client and mutates the player's
+    authoritative data. The client only ever sends a category and an
+    identifier; all prices, ownership and balances are checked here.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -18,7 +20,7 @@ local EconomyService = {}
 
 function EconomyService:Start()
     print("[EconomyService] Starting...")
-    
+
     ShopPurchaseRemote.OnServerInvoke = function(player, category, id)
         return self:ProcessPurchase(player, category, id)
     end
@@ -27,46 +29,66 @@ end
 function EconomyService:ProcessPurchase(player, category, id)
     local data = PlayerDataService:GetPlayerData(player)
     if not data then return false, "Data not loaded" end
-    
+
     if category == "Weapon" then
-        local weaponInfo = UpgradeConfig.Weapons[id]
-        if not weaponInfo then return false, "Invalid weapon" end
-        if data.UnlockedWeapons[weaponInfo.Name] then return false, "Already owned" end
-        
-        if data.Coins >= weaponInfo.Cost then
-            data.Coins -= weaponInfo.Cost
-            data.UnlockedWeapons[weaponInfo.Name] = true
-            PlayerDataService:UpdateClient(player)
-            return true, "Weapon purchased!"
-        else
-            return false, "Not enough Coins"
-        end
-        
+        return self:PurchaseWeapon(player, data, id)
+    elseif category == "Equip" then
+        return self:EquipWeapon(player, data, id)
     elseif category == "Upgrade" then
-        local upgradeInfo = UpgradeConfig.Upgrades[id]
-        if not upgradeInfo then return false, "Invalid upgrade" end
-        
-        local currentLevel = data.PermanentUpgrades[upgradeInfo.Id] or 0
-        local cost = upgradeInfo.BaseCost * (currentLevel + 1)
-        
-        if data.Coins >= cost then
-            data.Coins -= cost
-            data.PermanentUpgrades[upgradeInfo.Id] = currentLevel + 1
-            
-            -- Apply upgrade effects
-            if upgradeInfo.Id == "MaxHealth" then
-                PastelCore.MaxHealth += upgradeInfo.Increment
-                PastelCore:Repair(upgradeInfo.Increment)
-            end
-            
-            PlayerDataService:UpdateClient(player)
-            return true, "Upgrade successful!"
-        else
-            return false, "Not enough Coins"
-        end
+        return self:PurchaseUpgrade(player, data, id)
     end
-    
+
     return false, "Invalid category"
+end
+
+function EconomyService:PurchaseWeapon(player, data, id)
+    local weapon = UpgradeConfig.GetWeapon(id)
+    if not weapon then return false, "Invalid weapon" end
+    if data.UnlockedWeapons[weapon.Name] then return false, "Already owned" end
+
+    if data.Coins < weapon.Cost then
+        return false, "Not enough Coins"
+    end
+
+    data.Coins -= weapon.Cost
+    data.UnlockedWeapons[weapon.Name] = true
+    PlayerDataService:UpdateClient(player)
+    return true, ("Purchased %s"):format(weapon.Name)
+end
+
+function EconomyService:EquipWeapon(player, data, id)
+    local weapon = UpgradeConfig.GetWeapon(id)
+    if not weapon then return false, "Invalid weapon" end
+    if not data.UnlockedWeapons[weapon.Name] then return false, "Weapon not owned" end
+    if data.EquippedWeapon == weapon.Name then return false, "Already equipped" end
+
+    data.EquippedWeapon = weapon.Name
+    PlayerDataService:UpdateClient(player)
+    return true, ("Equipped %s"):format(weapon.Name)
+end
+
+function EconomyService:PurchaseUpgrade(player, data, id)
+    local upgrade = UpgradeConfig.GetUpgrade(id)
+    if not upgrade then return false, "Invalid upgrade" end
+
+    local level = data.PermanentUpgrades[upgrade.Id] or 0
+    local cost = upgrade.BaseCost * (level + 1)
+
+    if data.Coins < cost then
+        return false, "Not enough Coins"
+    end
+
+    data.Coins -= cost
+    data.PermanentUpgrades[upgrade.Id] = level + 1
+
+    -- Apply the upgrade's effect to the shared Pastel Core state.
+    if upgrade.Id == "MaxHealth" then
+        PastelCore.MaxHealth += upgrade.Increment
+        PastelCore:Repair(upgrade.Increment)
+    end
+
+    PlayerDataService:UpdateClient(player)
+    return true, ("Purchased %s (Lv %d)"):format(upgrade.Name, level + 1)
 end
 
 function EconomyService:AddCoins(player, amount)

@@ -15,4 +15,9 @@ UIController:Start()
 CombatController:Start()
 SoundController:Start()
 
+-- The shop is built on top of the HUD created by UIController, so it must
+-- be initialized afterwards.
+local ShopUI = require(UI.ShopUI)
+ShopUI:Initialize()
+
 print("[Client] Pastel Rift Survival Ready!")

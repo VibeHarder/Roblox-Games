@@ -19,6 +19,15 @@ function CombatController:Start()
     local Net = ReplicatedStorage:WaitForChild("Net")
     local WeaponFireRemote = Net:WaitForChild("WeaponFire")
     
+    -- Follow the server's authoritative equipped weapon. The default here
+    -- matches the server default, so missing the initial broadcast is safe.
+    local DataUpdate = Net:WaitForChild("DataUpdate")
+    DataUpdate.OnClientEvent:Connect(function(data)
+        if data and data.EquippedWeapon then
+            self.CurrentWeapon = data.EquippedWeapon
+        end
+    end)
+
     -- Input Listener
     UserInputService.InputBegan:Connect(function(input, gpe)
         if gpe then return end
