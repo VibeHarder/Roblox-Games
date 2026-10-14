@@ -1,40 +1,67 @@
-# Pastel Rift Survival
+# Roblox-Games
 
-A colorful cooperative wave-survival game built with Rojo and Luau.
+A collection of Roblox experiences built with [Rojo](https://rojo.space/) and Luau.
+Each game lives in its own folder under `games/` and can be synced into Roblox Studio independently.
 
-## Setup Instructions
+## Games
 
-1. **Install Prerequisites**:
-   - [Roblox Studio](https://www.roblox.com/create)
-   - [Rojo Extension](https://rojo.space/) (VS Code plugin or CLI)
+| Game | Path | Genre | Description |
+| --- | --- | --- | --- |
+| Pastel Rift Survival | [`games/pastel-rift-survival`](games/pastel-rift-survival) | Co-op wave survival | Protect the Pastel Core from corrupted creatures emerging from dimensional rifts across 20 waves. |
 
-2. **Clone the Project**:
+## Requirements
+
+- [Roblox Studio](https://www.roblox.com/create)
+- [Rojo](https://rojo.space/) CLI or the VS Code extension
+
+## Getting started
+
+1. Clone the repository:
+
    ```bash
    git clone https://github.com/VibeHarder/Roblox-Games.git
-   cd Roblox-Games/games/pastel-rift-survival
+   cd Roblox-Games
    ```
 
-3. **Start Rojo**:
-   Run the bootstrap script:
+2. Pick a game and enter its folder, for example:
+
+   ```bash
+   cd games/pastel-rift-survival
+   ```
+
+3. Start Rojo and connect the plugin in Roblox Studio:
+
    ```bash
    ./scripts/bootstrap.sh
-   ```
-   Or manually:
-   ```bash
+   # or
    rojo serve
    ```
 
-4. **Connect to Studio**:
-   - Open a new Baseplate in Roblox Studio.
-   - Open the Rojo plugin.
-   - Click "Connect".
+   On Windows PowerShell, `./scripts/bootstrap.ps1` is also available.
 
-5. **Enable DataStore (Optional)**:
-   - To test saving, publish to a Roblox Game and enable "API Services" in Game Settings.
+4. See the game's own `README.md` for gameplay details and Studio setup steps.
 
-## Gameplay
-Protect the **Pastel Core** at the center of the meadow from corrupted creatures emerging from dimensional rifts.
+## Repository layout
 
-- **Objective**: Survive 20 waves.
-- **Controls**: WASD to move, Left Click to attack, E to interact.
-- **Resources**: Earn Coins and Rift Shards to buy upgrades and repair the core.
+```text
+Roblox-Games/
+├── games/
+│   └── <game-slug>/
+│       ├── default.project.json   # Rojo project mapping
+│       ├── README.md              # Game-specific setup and gameplay docs
+│       ├── scripts/               # Bootstrap helpers
+│       └── src/                   # Luau source (ReplicatedStorage, ServerScriptService, StarterPlayer)
+└── README.md                      # This catalog
+```
+
+## Adding a game
+
+Create a new folder under `games/` using a short kebab-case slug, give it its own
+`default.project.json`, `README.md`, `scripts/`, and `src/` tree, and add a row to the
+table above. Keep each game self-contained so it can be synced to Studio on its own.
+
+## Notes
+
+- Game logic is server-authoritative; the client sends requests and the server validates them.
+- DataStore saving requires API Services to be enabled in the published experience's Game Settings.
+- Source is hosted here; publishing an experience to a Roblox account is done from Roblox Studio.
