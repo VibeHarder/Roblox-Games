@@ -16,6 +16,7 @@ local WaveService = {
     CurrentWave = 0,
     IsWaveActive = false,
     EnemiesRemaining = 0,
+    AllWavesComplete = false,
 }
 
 function WaveService:Start()
@@ -35,7 +36,11 @@ function WaveService:PrepareNextWave()
     local config = WaveConfig.Waves[self.CurrentWave]
     
     if not config then
-        print("[WaveService] All waves completed! Victory!")
+        if not self.AllWavesComplete then
+            self.AllWavesComplete = true
+            print("[WaveService] All waves completed! Victory!")
+            WaveUpdate:FireAllClients({Wave = self.CurrentWave - 1, Phase = "Victory"})
+        end
         return
     end
     
@@ -60,7 +65,17 @@ function WaveService:StartWave(config)
             local enemyType = config.EnemyTypes[math.random(1, #config.EnemyTypes)]
             
             -- Spawn the enemy via the EnemySpawner system
-            EnemySpawner:Spawn(enemyType)
+            local enemyModel = EnemySpawner:Spawn(enemyType)
+
+            -- Count this enemy's death toward wave completion
+            if enemyModel then
+                local humanoid = enemyModel:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.Died:Connect(function()
+                        self:OnEnemyDefeated()
+                    end)
+                end
+            end
             
             task.wait(config.SpawnInterval)
         end
